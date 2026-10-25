@@ -1,0 +1,8 @@
+{
+    "name": "ibu/majstori-web-app-backend",
+    "description": "Majstori Web App – backend for the IT 2001 Web Programming project",
+    "type": "project",
+    "require": {
+        "php": ">=8.2"
+    }
+}

@@ -1,4 +1,5 @@
-// PRIVREMENI PODACI ZA M1: kasnije ce se isti format popunjavati odgovorom PHP API-ja.
+// PRIVREMENI PODACI ZA M1: kasnije će se ovaj format popunjavati odgovorom PHP API-ja.
+// Ovdje su podaci o kategorijama, a ne u HTML-u, zato što se isto stablo koristi na više stranica.
 const kategorijeM1 = [
   { id: 1, naziv: "Sva majstorstva", roditelj_id: null },
   { id: 10, naziv: "Električar", roditelj_id: 1 },
@@ -22,7 +23,154 @@ const kategorijeM1 = [
 ];
 const otvoreneKategorijeM1 = new Set([1, 10, 12, 18, 40, 42, 45]);
 const odabraniMajstorluciM1 = [10, 27, 20, 45];
+
+
+// Demonstracijski podaci su odvojeni od HTML-a. U kasnijoj fazi isti prikazi
+// mogu dobiti podatke iz PHP API-ja umjesto ovih privremenih nizova.
+const demoGradoviM1 = [
+  { naziv: "Sarajevo", sirina: 43.8563, duzina: 18.4131 },
+  { naziv: "Zenica", sirina: 44.2034, duzina: 17.9077 },
+  { naziv: "Mostar", sirina: 43.3438, duzina: 17.8078 },
+  { naziv: "Tuzla", sirina: 44.5384, duzina: 18.6671 },
+  { naziv: "Bihać", sirina: 44.8167, duzina: 15.8708 }
+];
+
+const demoMajstoriM1 = [
+  {
+    id: "amir",
+    ime: "Amir Hadžić",
+    email: "amir.hadzic@primjer.ba",
+    grad: "Sarajevo",
+    telefon: "061 000 111",
+    sazetak: "Električarske usluge i manje popravke u domaćinstvu.",
+    opis: "Električarske usluge i manje popravke u domaćinstvu.",
+    kategorije: ["Električar", "Popravke"]
+  },
+  {
+    id: "adnan",
+    ime: "Adnan Kovač",
+    email: "adnan.kovac@primjer.ba",
+    grad: "Zenica",
+    telefon: "061 000 222",
+    sazetak: "Vodoinstalaterski radovi u domaćinstvu.",
+    opis: "Vodoinstalaterski radovi u domaćinstvu.",
+    kategorije: ["Vodoinstalater", "Održavanje"]
+  }
+];
+
+const demoKorisniciM1 = [
+  { id: "amir", email: "amir.hadzic@primjer.ba", uloga: "artisan", ime: "Amir Hadžić", grad: "Sarajevo", telefon: "061 000 111" },
+  { id: "admin", email: "admin@primjer.ba", uloga: "admin", ime: "", grad: "", telefon: "" }
+];
+
+// Brojevi na početnoj su zasebne demo vrijednosti, a ne rezultat upita nad bazom.
+const demoStatistikaM1 = { majstori: 12, kategorije: 19, gradovi: 5 };
+
+function renderDemoData(pageKey) {
+  // Ove funkcije popunjavaju prazne elemente u HTML-u nakon što jQuery učita stranicu.
+  if (pageKey === "pocetna") {
+    const artisans = document.getElementById("statArtisans");
+    const categories = document.getElementById("statCategories");
+    const cities = document.getElementById("statCities");
+    if (artisans) artisans.textContent = demoStatistikaM1.majstori;
+    if (categories) categories.textContent = kategorijeM1.length;
+    if (cities) cities.textContent = demoGradoviM1.length;
+  }
+
+  if (pageKey === "pretraga") {
+    const citySelect = document.getElementById("city");
+    demoGradoviM1.forEach(grad => {
+      const option = document.createElement("option");
+      option.value = grad.naziv;
+      option.textContent = grad.naziv;
+      citySelect.appendChild(option);
+    });
+
+    const results = document.getElementById("sampleSearchResults");
+    const resultCount = document.getElementById("searchResultCount");
+    if (resultCount) resultCount.textContent = `${demoMajstoriM1.length} majstora`;
+    if (results) {
+      results.innerHTML = demoMajstoriM1.map(majstor => `
+        <div class="card result-card">
+          <div class="person-icon">♙</div>
+          <div>
+            <h3>${majstor.ime}</h3>
+            <p>${majstor.sazetak}</p>
+            <div class="meta"><span>⌖ ${majstor.grad}</span><span>☎ ${majstor.telefon}</span></div>
+            <div class="tag-list">${majstor.kategorije.map(k => `<span class="tag">${k}</span>`).join("")}</div>
+            <div style="margin-top:15px"><a class="button small" href="#profil-majstora" data-profile-id="${majstor.id}">Pogledaj profil</a></div>
+          </div>
+        </div>`).join("");
+    }
+  }
+
+  if (pageKey === "korisnici") {
+    const tbody = document.getElementById("usersTableBody");
+    if (tbody) {
+      tbody.innerHTML = demoKorisniciM1.map(korisnik => `
+        <tr>
+          <td>${korisnik.email}</td>
+          <td><span class="pill ${korisnik.uloga === "admin" ? "gray" : ""}">${korisnik.uloga === "admin" ? "Admin" : "Majstor"}</span></td>
+          <td>${korisnik.ime || "—"}</td>
+          <td>${korisnik.grad || "—"}</td>
+          <td><button class="button secondary small" data-user="${korisnik.id}">Pregled</button></td>
+        </tr>`).join("");
+    }
+  }
+
+  if (pageKey === "gradovi") {
+    const tbody = document.getElementById("citiesTableBody");
+    if (tbody) {
+      tbody.innerHTML = demoGradoviM1.map(grad =>
+        `<tr><td>${grad.naziv}</td><td>${Number(grad.sirina).toFixed(4)}</td><td>${Number(grad.duzina).toFixed(4)}</td></tr>`
+      ).join("");
+    }
+  }
+
+  if (pageKey === "moj-profil") {
+    const profile = demoMajstoriM1[0];
+    const firstName = document.getElementById("firstName");
+    if (firstName) {
+      firstName.value = profile.ime.split(" ")[0];
+      document.getElementById("lastName").value = profile.ime.split(" ").slice(1).join(" ");
+      document.getElementById("profilePhone").value = profile.telefon;
+      document.getElementById("description").value = profile.opis;
+      const citySelect = document.getElementById("profileCity");
+      demoGradoviM1.forEach(grad => {
+        const option = document.createElement("option");
+        option.value = grad.naziv;
+        option.textContent = grad.naziv;
+        citySelect.appendChild(option);
+      });
+      citySelect.value = profile.grad;
+    }
+  }
+
+  if (pageKey === "profil-majstora") {
+    // Za ovu demonstraciju javni profil prikazuje prvog majstora iz demoMajstoriM1.
+    const profile = demoMajstoriM1[0];
+    const putText = (id, value) => {
+      const element = document.getElementById(id);
+      if (element) element.textContent = value;
+    };
+    putText("publicProfileName", profile.ime);
+    putText("publicProfileCardName", profile.ime);
+    putText("publicProfileSummary", profile.sazetak);
+    putText("publicProfileCity", `⌖ ${profile.grad}`);
+    putText("publicProfilePhone", `☎ ${profile.telefon}`);
+    putText("publicProfileDescription", profile.opis);
+    const tags = document.getElementById("publicProfileTags");
+    if (tags) tags.innerHTML = profile.kategorije.map(k => `<span class="tag">${k}</span>`).join("");
+    const phone = document.getElementById("publicContactPhone");
+    const city = document.getElementById("publicContactCity");
+    if (phone) phone.value = profile.telefon;
+    if (city) city.value = profile.grad;
+  }
+}
+// Vraća direktne podkategorije zadane kategorije na osnovu roditelj_id veze.
 function djecaKategorije(id) { return kategorijeM1.filter(k => k.roditelj_id === id); }
+// Rekurzivno crta hijerarhiju kategorija. Parametri određuju da li se prikazuju
+// checkbox polja za majstora/pretragu i dugmad za uređivanje u administratorskom dijelu.
 function nacrtajStablo(kontejner, odabrane = [], saCheckboxima = false, adminActions = false) {
   if (!kontejner) return;
   function grana(k, nivo) {
@@ -44,6 +192,7 @@ function nacrtajStablo(kontejner, odabrane = [], saCheckboxima = false, adminAct
   }));
 }
 
+// Dozvoljene stranice i njihovi naslovi. Vrijednost ključa odgovara nazivu HTML fajla u views/.
 const pages = {
   "pocetna": { title: "Početna" },
   "pretraga": { title: "Pretraga majstora" },
@@ -63,6 +212,8 @@ const pageTitle = document.getElementById("pageTitle");
 const pageBreadcrumb = document.getElementById("pageBreadcrumb");
 const navLinks = [...document.querySelectorAll(".nav-link[data-page]")];
 
+// SPA navigacija: mijenja hash URL-a i jQuery AJAX-om učitava samo traženi view,
+// bez ponovnog učitavanja cijelog index.html dokumenta.
 function showPage(pageKey) {
   const key = pages[pageKey] ? pageKey : "pocetna";
   const page = pages[key];
@@ -81,6 +232,7 @@ function showPage(pageKey) {
     dataType: "html"
   }).done(function (markup) {
     $("#pageContent").html(markup);
+    renderDemoData(key);
     if (key === "pretraga") nacrtajStablo(document.getElementById("searchCategoryTree"), [], true);
     if (key === "kategorije") nacrtajStablo(document.getElementById("adminCategoryTree"), [], false, true);
     if (key === "moji-majstorluci") nacrtajStablo(document.getElementById("myTradesTree"), odabraniMajstorluciM1, true);
@@ -89,7 +241,10 @@ function showPage(pageKey) {
     $("#pageContent").html('<div class="notice">Stranice se učitavaju iz foldera views. Pokreni projekat preko VS Code Live Servera, a ne direktnim otvaranjem index.html.</div>');
   });
 }
+// AJAX zamijeni sadržaj stranice, pa se događaji za njene forme i dugmad
+// moraju povezati nakon učitavanja. Zato se ova funkcija poziva za svaki view.
 function attachPageActions() {
+  // Pretraga je zasad demonstracijska: prikazuje izabrane kriterije, ali ne šalje upit bazi.
   const searchForm = document.getElementById("searchForm");
   if (searchForm) searchForm.addEventListener("submit", e => {
     e.preventDefault();
@@ -99,6 +254,7 @@ function attachPageActions() {
     const radijus = document.getElementById("radius").value;
     results.innerHTML = `<div class="notice"><strong>Odabrani kriteriji (M1 demonstracija):</strong><br>Kategorije: ${odabrane.length ? odabrane.join(", ") : "sve kategorije"}<br>Grad: ${grad}<br>Udaljenost: ${radijus ? radijus + " km" : "bez ograničenja"}.<br>Rezultati su probni; stvarna pretraga će koristiti podatke iz baze.</div>` + results.innerHTML;
   });
+  // Sljedeće forme trenutno samo prikazuju poruku; još nisu povezane s backendom.
   const loginForm = document.getElementById("loginForm");
   if (loginForm) loginForm.addEventListener("submit", e => { e.preventDefault(); document.getElementById("loginMessage").textContent = "Forma je samo probna — prijava još nije povezana s bazom."; });
   const profileForm = document.getElementById("profileForm");
@@ -122,8 +278,10 @@ function attachPageActions() {
     if ([...tbody.querySelectorAll("tr td:first-child")].some(td => td.textContent.trim().toLowerCase() === email.toLowerCase())) {
       document.getElementById("newUserMessage").textContent = "Korisnik s ovim e-mailom već postoji na probnoj listi."; return;
     }
-    const row = document.createElement("tr");
     const roleLabel = role === "admin" ? "Admin" : "Majstor";
+    // Dodajemo u memorijski niz i tabelu; nakon osvježavanja preglednika podaci nestaju.
+    demoKorisniciM1.push({ id: `demo-${Date.now()}`, email, uloga: role, ime: "", grad: "", telefon: "" });
+    const row = document.createElement("tr");
     row.innerHTML = `<td></td><td><span class="pill ${role === "admin" ? "gray" : ""}">${roleLabel}</span></td><td>—</td><td>—</td><td><span class="muted">Novi probni račun</span></td>`;
     row.cells[0].textContent = email; tbody.appendChild(row);
     document.getElementById("newUserMessage").textContent = `Probni račun ${email} (${roleLabel}) dodat je u tabelu. Nije sačuvan u bazi.`;
@@ -134,11 +292,15 @@ function attachPageActions() {
   const categoryPanel = document.getElementById("categoryEditor");
   const categoryForm = document.getElementById("categoryForm");
   let editingCategoryId = null;
+  // Pronalazi kategoriju i sve njene potomke; koristi se da se kategorija ne premjesti
+  // u vlastito podstablo, čime bi nastala kružna/neispravna hijerarhija.
   function descendantsOf(id) {
     const result = new Set([id]); let changed = true;
     while (changed) { changed = false; for (const k of kategorijeM1) if (result.has(k.roditelj_id) && !result.has(k.id)) { result.add(k.id); changed = true; } }
     return result;
   }
+  // Popunjava izbor nadređene kategorije. Pri uređivanju iz liste se izuzimaju
+  // sama kategorija i svi njeni potomci da se spriječi kružno povezivanje.
   function populateParentSelect(selectedId = 1, excludeId = null) {
     const select = document.getElementById("categoryParent"); select.innerHTML = "";
     const blocked = excludeId === null ? new Set() : descendantsOf(excludeId);
@@ -158,6 +320,8 @@ function attachPageActions() {
     populateParentSelect(item ? item.roditelj_id : 1, id);
     document.getElementById("categoryMessage").textContent = ""; categoryPanel.hidden = false; categoryPanel.scrollIntoView({behavior:"smooth", block:"center"});
   }
+  // Jedan delegirani click događaj obrađuje dugmad u cijelom stablu, uključujući
+  // čvorove koji se ponovo nacrtaju nakon dodavanja, uređivanja ili brisanja.
   function attachAdminTreeActions() {
     const tree = document.getElementById("adminCategoryTree");
     if (!tree || tree.dataset.actionsAttached === "true") return;
@@ -176,6 +340,8 @@ function attachPageActions() {
       const category = kategorijeM1.find(k => k.id === id);
       if (!category || id === 1) return;
 
+      // Dozvoljeno je brisanje samo lista (kategorija bez djece), da se ne izgubi
+      // cijelo podstablo jednim slučajnim klikom.
       const children = djecaKategorije(id);
       const message = document.getElementById("categoryMessage");
       if (children.length > 0) {
@@ -202,6 +368,8 @@ function attachPageActions() {
   if (addCategory && categoryPanel) addCategory.addEventListener("click", () => openCategoryEditor());
   const cancelCategory = document.getElementById("cancelCategory");
   if (cancelCategory) cancelCategory.addEventListener("click", () => { categoryPanel.hidden = true; editingCategoryId = null; });
+  // Provjera naziva i roditelja prije promjene kategorije čuva jedinstvene nazive
+  // i sprečava da čvor postane roditelj sam sebi ili vlastitom potomku.
   if (categoryForm) categoryForm.addEventListener("submit", e => {
     e.preventDefault(); const name = document.getElementById("categoryName").value.trim(); const parentId = Number(document.getElementById("categoryParent").value);
     if (!name) return;
@@ -217,7 +385,8 @@ function attachPageActions() {
     categoryPanel.hidden = true; refreshAdminTree();
   });
 
-  // Dodavanje grada: stvarni geokodirajući API i OpenStreetMap prikaz.
+  // Dodavanje grada: poziva Nominatim geokodirajući API i prikazuje pronađenu
+  // lokaciju na OpenStreetMap mapi. Ovo je jedini dio koji traži internet vezu.
   const addCity = document.getElementById("addCity"); const newCityPanel = document.getElementById("newCityPanel");
   if (addCity && newCityPanel) addCity.addEventListener("click", () => { newCityPanel.hidden = !newCityPanel.hidden; });
   let foundCity = null;
@@ -241,25 +410,45 @@ function attachPageActions() {
       result.hidden = false; message.textContent = "API poziv završen; pregledaj koordinate i označenu lokaciju na mapi.";
     } catch (err) { message.textContent = `API poziv nije uspio: ${err.message}. Provjeri internet vezu i pokušaj kasnije.`; }
   });
+  // Potvrđena lokacija se dodaje u probni niz tek nakon korisnikove potvrde.
   const saveDemoCity = document.getElementById("saveDemoCity");
   if (saveDemoCity) saveDemoCity.addEventListener("click", () => {
     if (!foundCity) return; const tbody = document.querySelector("#citiesTable tbody");
     if ([...tbody.querySelectorAll("tr td:first-child")].some(td => td.textContent.trim().toLocaleLowerCase() === foundCity.name.toLocaleLowerCase())) { document.getElementById("cityApiMessage").textContent = "Ovaj grad je već na probnoj listi."; return; }
+    // Grad se čuva samo u JavaScript memoriji za trenutnu demonstraciju.
+    demoGradoviM1.push({ naziv: foundCity.name, sirina: foundCity.lat, duzina: foundCity.lon });
     const row = document.createElement("tr"); row.innerHTML = `<td></td><td>${foundCity.lat.toFixed(6)}</td><td>${foundCity.lon.toFixed(6)}</td>`; row.cells[0].textContent = foundCity.name; tbody.appendChild(row);
     document.getElementById("cityApiMessage").textContent = `Grad ${foundCity.name} dodat je na probnu listu. Podaci nisu trajno sačuvani u bazi.`;
   });
+  // Prikaz detalja korisnika čita podatke iz demo nizova, a ne iz HTML redova.
   document.querySelectorAll("[data-user]").forEach(button => button.addEventListener("click", () => {
     const box = document.getElementById("userDetails");
+    const korisnik = demoKorisniciM1.find(item => item.id === button.dataset.user);
+    if (!box || !korisnik) return;
+
     box.style.display = "block";
-    if (button.dataset.user === "amir") {
-      box.innerHTML = `<h3>Pregled korisnika: amir.hadzic@primjer.ba</h3><div class="grid grid-2" style="margin-top:15px"><div class="field"><label>Uloga</label><input value="Majstor" readonly></div><div class="field"><label>Ime i prezime</label><input value="Amir Hadžić" readonly></div><div class="field"><label>Grad</label><input value="Sarajevo" readonly></div><div class="field"><label>Telefon</label><input value="061 000 111" readonly></div><div class="field" style="grid-column:1/-1"><label>Opis</label><textarea readonly>Električarske usluge i manje popravke u domaćinstvu.</textarea></div></div><p style="margin-top:12px;color:var(--muted);font-size:11px">Podaci profila su samo za čitanje. Majstorluci nisu prikazani ovdje.</p>`;
+    if (korisnik.uloga === "artisan") {
+      const majstor = demoMajstoriM1.find(item => item.id === korisnik.id);
+      box.innerHTML = `<h3>Pregled korisnika: ${korisnik.email}</h3>
+        <div class="grid grid-2" style="margin-top:15px">
+          <div class="field"><label>Uloga</label><input value="Majstor" readonly></div>
+          <div class="field"><label>Ime i prezime</label><input value="${majstor ? majstor.ime : (korisnik.ime || "Nije uneseno")}" readonly></div>
+          <div class="field"><label>Grad</label><input value="${majstor ? majstor.grad : (korisnik.grad || "Nije uneseno")}" readonly></div>
+          <div class="field"><label>Telefon</label><input value="${majstor ? majstor.telefon : (korisnik.telefon || "Nije uneseno")}" readonly></div>
+          <div class="field" style="grid-column:1/-1"><label>Opis</label><textarea readonly>${majstor ? majstor.opis : "Profil još nije popunjen."}</textarea></div>
+        </div>
+        <p style="margin-top:12px;color:var(--muted);font-size:11px">Podaci profila su samo za čitanje. Majstorluci nisu prikazani ovdje.</p>`;
     } else {
-      box.innerHTML = `<h3>Pregled korisnika: admin@primjer.ba</h3><div class="field" style="max-width:320px;margin-top:15px"><label>Uloga</label><input value="Admin" readonly></div><p style="margin-top:12px;color:var(--muted);font-size:11px">Administrator nema profil majstora.</p>`;
+      box.innerHTML = `<h3>Pregled korisnika: ${korisnik.email}</h3>
+        <div class="field" style="max-width:320px;margin-top:15px"><label>Uloga</label><input value="Admin" readonly></div>
+        <p style="margin-top:12px;color:var(--muted);font-size:11px">Administrator nema profil majstora.</p>`;
     }
   }));
 }
 
 const demoRole = document.getElementById("demoRole");
+// Prebacuje vidljivi meni prema odabranoj demo ulozi. Ovo nije prava autorizacija;
+// stvarnu provjeru uloge mora raditi backend kada bude uveden.
 function primijeniDemoUlogu() {
   const uloga = demoRole ? demoRole.value : "anonymous";
   document.querySelectorAll("[data-menu-section]").forEach(el => {
@@ -284,9 +473,11 @@ if (demoRole) {
   primijeniDemoUlogu();
 }
 
+// Otvara/zatvara bočni meni na manjim ekranima.
 $("#mobileMenu").on("click", function () {
   $(".sidebar").toggleClass("open");
 });
+// Kada se hash promijeni (klik na link ili dugme Nazad), učitaj odgovarajuću stranicu.
 $(window).on("hashchange", function () {
   showPage(location.hash.replace("#", "") || "pocetna");
 });

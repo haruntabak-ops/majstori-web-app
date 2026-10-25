@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="bs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Majstori | Web aplikacija</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js" defer></script>
+  <script src="js/app.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="#pocetna" aria-label="Majstori - početna">
+        <span class="brand-mark"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.7 6.3a5 5 0 0 0-6.4 6.4L3 18l3 3 5.3-5.3a5 5 0 0 0 6.4-6.4l-3 3-3-3 3-3Z"/></svg></span>
+        <span><strong>Majstori</strong><small>Web aplikacija</small><span class="app-author">Harun Tabak · IBU · 2026</span></span>
+      </a>
+      <div class="role-demo-picker">
+        <label for="demoRole">Izbor uloge <span>(privremeno za M1)</span></label>
+        <select id="demoRole" aria-label="Izbor uloge, privremeno za M1">
+          <option value="anonymous">Anonimni korisnik</option>
+          <option value="artisan">Majstor</option>
+          <option value="admin">Administrator</option>
+        </select>
+      </div>
+
+      <div class="nav-section-label" data-menu-section="anonymous">GLAVNI MENI</div>
+      <nav class="main-nav" data-menu-section="anonymous" aria-label="Glavni meni">
+        <a href="#pocetna" class="nav-link active" data-page="pocetna"><span class="nav-icon">⌂</span><span>Početna</span></a>
+        <a href="#pretraga" class="nav-link" data-page="pretraga"><span class="nav-icon">⌕</span><span>Pretraga majstora</span></a>
+        <a href="#prijava" class="nav-link" data-page="prijava"><span class="nav-icon">↪</span><span>Prijava</span></a>
+      </nav>
+
+      <div class="nav-section-label" data-menu-section="artisan">MOJ NALOG</div>
+      <nav class="main-nav" data-menu-section="artisan" aria-label="Moj nalog">
+        <a href="#moj-profil" class="nav-link" data-page="moj-profil"><span class="nav-icon">♙</span><span>Moj profil</span></a>
+        <a href="#moji-majstorluci" class="nav-link" data-page="moji-majstorluci"><span class="nav-icon">◇</span><span>Moji majstorluci</span></a>
+        <a href="#promjena-lozinke" class="nav-link" data-page="promjena-lozinke"><span class="nav-icon">▣</span><span>Promjena lozinke</span></a>
+      </nav>
+
+      <div class="nav-section-label" data-menu-section="admin">ADMINISTRACIJA</div>
+      <nav class="main-nav" data-menu-section="admin" aria-label="Administracija">
+        <a href="#korisnici" class="nav-link" data-page="korisnici"><span class="nav-icon">♧</span><span>Korisnici</span></a>
+        <a href="#kategorije" class="nav-link" data-page="kategorije"><span class="nav-icon">☷</span><span>Kategorije</span></a>
+        <a href="#gradovi" class="nav-link" data-page="gradovi"><span class="nav-icon">⌖</span><span>Gradovi</span></a>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <div class="prototype-note"><span class="status-dot"></span><span>Prikaz za M1<br><small>Probni podaci</small></span></div>
+        <a href="#odjava" class="nav-link logout-link" data-page="odjava"><span class="nav-icon">⇥</span><span>Odjava</span></a>
+      </div>
+    </aside>
+
+    <main class="main-area">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="mobile-menu" id="mobileMenu" aria-label="Otvori meni">☰</button>
+          <div>
+            <div class="breadcrumb">Majstori <span>/</span> <strong id="pageBreadcrumb">Početna</strong></div>
+            <h1 id="pageTitle">Početna</h1>
+          </div>
+        </div>
+        <div class="header-banner" aria-label="Majstori – povezujemo ljude s pouzdanim majstorima">
+          <svg viewBox="0 0 560 100" role="img" aria-hidden="true">
+            <rect x="1" y="1" width="558" height="98" rx="15" fill="#eef5ff"/>
+            <circle cx="49" cy="45" r="28" fill="#d8e7ff"/>
+            <path d="M39 51l18-18 8 8-18 18H39z" fill="none" stroke="#2563eb" stroke-width="3" stroke-linejoin="round"/>
+            <path d="M54 34l6-6 8 8-6 6" fill="none" stroke="#2563eb" stroke-width="3" stroke-linejoin="round"/>
+            <path d="M84 60h22V42l-11-9-11 9z" fill="#fff" stroke="#6b91d8" stroke-width="2" stroke-linejoin="round"/>
+            <path d="M92 60V49h7v11" fill="none" stroke="#6b91d8" stroke-width="2"/>
+            <text x="124" y="39" fill="#18345d" font-size="18" font-weight="800">Pravi majstor,</text>
+            <text x="124" y="61" fill="#2563eb" font-size="18" font-weight="800">na pravom mjestu.</text>
+            <text x="124" y="80" fill="#6c7f9a" font-size="11">Pronađi uslugu prema majstorluku i lokaciji</text>
+            <path d="M400 22h100M400 34h76M400 46h88" stroke="#c4d8fa" stroke-width="5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="account-card">
+          <div class="avatar" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.5-4 3-6 7-6s6.5 2 7 6"/></svg>
+          </div>
+          <div class="account-info">
+            <strong>Demo korisnik</strong>
+            <span><i class="role-dot"></i> Prikaz za M1 · bez prijave</span>
+          </div>
+        </div>
+      </header>
+
+      <section class="page-content" id="pageContent" aria-live="polite">
+        <div class="loading">Učitavanje stranice…</div>
+      </section>
+      <footer class="footer"><span>Majstori Web App</span><span>Milestone 1 · Statički prikaz</span></footer>
+    </main>
+  </div>
+
+        
+</body>
+</html>

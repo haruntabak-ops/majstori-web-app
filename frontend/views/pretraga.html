@@ -1,0 +1,18 @@
+<div class="page-heading"><div><p class="eyebrow">Javni dio aplikacije</p><h2>Pretraga majstora</h2><p>Odaberite jednu ili više kategorija, grad i željenu udaljenost.</p></div></div>
+      <div class="search-panel">
+        <form id="searchForm" class="content-stack">
+          <div class="field"><label>Stablo majstorluka — odaberi jednu ili više kategorija</label><div id="searchCategoryTree" class="tree-container"></div><p class="muted">Probne kategorije za M1. Kasnije će se učitavati iz baze preko PHP backenda.</p></div>
+          <div class="form-grid">
+            <div class="field"><label for="city">Grad</label><select id="city"><option value="">Svi gradovi</option><option>Sarajevo</option><option>Zenica</option><option>Mostar</option><option>Tuzla</option><option>Bihać</option></select></div>
+            <div class="field"><label for="radius">Udaljenost od grada (opcionalno)</label><select id="radius"><option value="">Bez ograničenja udaljenosti</option><option value="10">10 km</option><option value="25">25 km</option><option value="50">50 km</option><option value="100">100 km</option></select></div>
+          </div>
+          <div class="form-actions" style="margin-top:0"><button class="button" type="submit">Prikaži rezultate</button><button class="button secondary" type="reset">Poništi</button></div>
+        </form>
+      </div>
+      <div id="searchResults" class="content-stack" style="margin-top:22px">
+        <div class="page-heading" style="margin-bottom:0"><div><h2 style="font-size:19px">Primjeri rezultata</h2><p>Probni podaci za prikaz izgleda u M1.</p></div><span class="pill">2 majstora</span></div>
+        <div class="grid grid-2">
+          <div class="card result-card"><div class="person-icon">♙</div><div><h3>Amir Hadžić</h3><p>Električarske usluge i manje popravke.</p><div class="meta"><span>⌖ Sarajevo</span><span>☎ 061 000 111</span></div><div class="tag-list"><span class="tag">Električar</span><span class="tag">Popravke</span></div><div style="margin-top:15px"><a class="button small" href="#profil-majstora">Pogledaj profil</a></div></div></div>
+          <div class="card result-card"><div class="person-icon">♙</div><div><h3>Adnan Kovač</h3><p>Vodoinstalaterski radovi u domaćinstvu.</p><div class="meta"><span>⌖ Zenica</span><span>☎ 061 000 222</span></div><div class="tag-list"><span class="tag">Vodoinstalater</span><span class="tag">Održavanje</span></div><div style="margin-top:15px"><a class="button small" href="#profil-majstora">Pogledaj profil</a></div></div></div>
+        </div>
+      </div>

@@ -30,7 +30,7 @@ function nacrtajStablo(kontejner, odabrane = [], saCheckboxima = false, adminAct
     const otvoreno = otvoreneKategorijeM1.has(k.id);
     const ikona = djeca.length ? (otvoreno ? "📂" : "📁") : "📄";
     const oznaka = saCheckboxima && k.id !== 1 ? `<input class="tree-checkbox" type="checkbox" data-category-id="${k.id}" ${odabrane.includes(k.id) ? "checked" : ""} aria-label="Odaberi ${k.naziv}">` : "";
-    const adminButtons = adminActions && k.id !== 1 ? `<span class="tree-admin-actions"><button type="button" data-edit-category="${k.id}">Uredi / premjesti</button></span>` : "";
+    const adminButtons = adminActions && k.id !== 1 ? `<span class="tree-admin-actions"><button type="button" data-edit-category="${k.id}">Uredi / premjesti</button><button type="button" class="button-danger" data-delete-category="${k.id}">Obriši</button></span>` : "";
     let html = `<div class="tree-node" style="--tree-level:${nivo}"><div class="tree-row">${djeca.length ? `<button class="tree-toggle" type="button" data-toggle-category="${k.id}" aria-label="${otvoreno ? "Skupi" : "Proširi"} ${k.naziv}">${otvoreno ? "▾" : "▸"}</button>` : `<span class="tree-toggle-placeholder"></span>`}<span class="tree-folder">${ikona}</span>${oznaka}<span class="tree-name">${k.naziv}</span><span class="tree-id">ID: ${k.id}</span>${adminButtons}</div>`;
     if (djeca.length && otvoreno) html += `<div class="tree-children">${djeca.map(d => grana(d, nivo + 1)).join("")}</div>`;
     return html + `</div>`;
@@ -163,8 +163,38 @@ function attachPageActions() {
     if (!tree || tree.dataset.actionsAttached === "true") return;
     tree.dataset.actionsAttached = "true";
     tree.addEventListener("click", event => {
-      const button = event.target.closest("[data-edit-category]");
-      if (button) openCategoryEditor(Number(button.dataset.editCategory));
+      const editButton = event.target.closest("[data-edit-category]");
+      if (editButton) {
+        openCategoryEditor(Number(editButton.dataset.editCategory));
+        return;
+      }
+
+      const deleteButton = event.target.closest("[data-delete-category]");
+      if (!deleteButton) return;
+
+      const id = Number(deleteButton.dataset.deleteCategory);
+      const category = kategorijeM1.find(k => k.id === id);
+      if (!category || id === 1) return;
+
+      const children = djecaKategorije(id);
+      const message = document.getElementById("categoryMessage");
+      if (children.length > 0) {
+        message.textContent = `Kategoriju „${category.naziv}” nije moguće obrisati jer ima podkategorije. Prvo premjesti ili obriši njene podkategorije.`;
+        message.scrollIntoView({behavior: "smooth", block: "center"});
+        return;
+      }
+
+      if (!window.confirm(`Želiš li obrisati kategoriju „${category.naziv}”? Ova promjena je samo privremena u M1 demonstraciji.`)) return;
+
+      const index = kategorijeM1.findIndex(k => k.id === id);
+      if (index !== -1) kategorijeM1.splice(index, 1);
+
+      const selectedIndex = odabraniMajstorluciM1.indexOf(id);
+      if (selectedIndex !== -1) odabraniMajstorluciM1.splice(selectedIndex, 1);
+
+      otvoreneKategorijeM1.delete(id);
+      message.textContent = `Kategorija „${category.naziv}” je obrisana iz M1 demonstracije. Promjena nije sačuvana u bazi.`;
+      refreshAdminTree();
     });
   }
   attachAdminTreeActions();

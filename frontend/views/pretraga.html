@@ -1,0 +1,15 @@
+<div class="page-heading"><div><p class="eyebrow">Javni dio aplikacije</p><h2>Pretraga majstora</h2><p>Odaberite jednu ili više kategorija, grad i željenu udaljenost.</p></div></div>
+      <div class="search-panel">
+        <form id="searchForm" class="content-stack">
+          <div class="field"><label>Stablo majstorluka — odaberi jednu ili više kategorija</label><div id="searchCategoryTree" class="tree-container"></div><p class="muted">Probne kategorije za M1. Kasnije će se učitavati iz baze preko PHP backenda.</p></div>
+          <div class="form-grid">
+            <div class="field"><label for="city">Grad</label><select id="city"><option value="">Svi gradovi</option></select></div>
+            <div class="field"><label for="radius">Udaljenost od grada (opcionalno)</label><select id="radius"><option value="">Bez ograničenja udaljenosti</option><option value="10">10 km</option><option value="25">25 km</option><option value="50">50 km</option><option value="100">100 km</option></select></div>
+          </div>
+          <div class="form-actions" style="margin-top:0"><button class="button" type="submit">Prikaži rezultate</button><button class="button secondary" type="reset">Poništi</button></div>
+        </form>
+      </div>
+      <div id="searchResults" class="content-stack" style="margin-top:22px">
+        <div class="page-heading" style="margin-bottom:0"><div><h2 style="font-size:19px">Primjeri rezultata</h2><p>Probni podaci za prikaz izgleda u M1.</p></div><span class="pill" id="searchResultCount"></span></div>
+        <div id="sampleSearchResults" class="grid grid-2"></div>
+      </div>

@@ -13,6 +13,8 @@ Prije rada na odgovarajućem dijelu aplikacije, koristi postojeću projektnu dok
 - `docs/ERD.md` – model baze podataka i odnosi između entiteta. Provjeri ga prije planiranja ili izmjene baze i backend pristupa podacima.
 - `docs/AI_LOG.md` – evidencija korištenja AI alata i relevantnih primjera tokom razvoja.
 - `radna-dokumentacija/` – pomoćne bilješke i radni materijali; koristi ih kao dodatni kontekst, a ne kao zamjenu za usvojenu projektnu dokumentaciju.
+- `database/majstori_web_app.sql` – SQL skripta za kreiranje baze i početne testne podatke.
+- `docs/FRONTEND_API_PLAN.md` – plan povezivanja funkcionalnosti frontenda s REST rutama, servisima i DAO metodama; koristiti kao referencu u narednim milestoneima.
 
 Ako se dokumenti razlikuju ili nešto nije jasno, nemoj samostalno izmišljati pravilo. Navedi neslaganje i zatraži pojašnjenje kada je potrebno.
 
@@ -66,3 +68,15 @@ Unutar `backend/` nalaze se konfiguracija, logovi, middleware te `rest/dao/`, `r
 - HTML pogledi: pratiti nazive koji već postoje; za nove fajlove koristiti `kebab-case.html` ako se ne dogovori drugačije.
 
 Ne preimenovati postojeće elemente samo radi kozmetičkog ujednačavanja. Prije preimenovanja provjeriti sve njihove upotrebe.
+
+## 7. Dodatne upute za Milestone 2 – Baza podataka i DAO sloj
+
+1. **Baza podataka:** Pridržavati se ERD modela i funkcionalne specifikacije projekta. Ne uvoditi nepotrebne izmjene baze niti nove funkcionalnosti.
+
+2. **DAO arhitektura:** Slijediti pristup iz pokazne aplikacije **Campus Events App** – zajednička klasa `BaseDao` za generičke CRUD operacije i posebna DAO klasa za svaku tabelu.
+
+3. **Planiranje, arhitektura i stil:** Prije implementacije DAO metoda analizirati funkcionalnosti postojećeg frontenda i projektne specifikacije te osmisliti plan njihovog povezivanja s budućim REST rutama, servisima i potrebnim DAO metodama. Plan dokumentovati u `docs/FRONTEND_API_PLAN.md`. Poštovati razdvajanje DAO, Service i REST sloja te slijediti jednostavan PHP stil iz pokazne aplikacije **Campus Events App**, bez nepotrebnih apstrakcija.
+
+4. **Vezna tabela:** Voditi računa da `MAJSTOR_KATEGORIJE` ima složeni primarni ključ umjesto standardnog `id`. Prilagoditi njenu DAO klasu i zaštititi `BaseDao` od neodgovarajućih generičkih operacija.
+
+5. **Pretraga majstora:** Osmisliti efikasnu pretragu prema hijerarhiji kategorija, uz opcionalni grad i radijus. Majstor odgovara traženoj kategoriji samo ako je eksplicitno odabrao nju ili nekog njenog potomka, a ne samo roditelja.

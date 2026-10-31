@@ -171,3 +171,245 @@ ORDER BY m.prezime, m.ime, kat.naziv;
 7,Faris Vodenić,Bihać,Ugradnja cijevi,2026-10-30 22:39:08
 10,Nedim Zidarić,Zenica,Zidar,2026-10-30 22:39:08
 */
+
+
+-- 7a. Provjera pretrage majstora po stablu majstorluka - dio prvi (2 kategorije istog roditelja)
+
+-- PARAMETRI PRETRAGE
+SET @kategorije = JSON_ARRAY(15,18); -- Lista ID-jeva kategorija (15-Alarmni sistemi, 18-Video nadzor)
+SET @grad_id = NULL;              -- NULL = svi gradovi
+SET @radijus_km = NULL;           -- NULL = bez radijusa
+
+-- PRETRAGA MAJSTORA
+WITH RECURSIVE podstablo AS (
+    -- Odabrane kategorije
+    SELECT k.id
+    FROM KATEGORIJE k
+    JOIN JSON_TABLE(
+        @kategorije,
+        '$[*]' COLUMNS (id INT PATH '$')
+    ) t ON t.id = k.id
+    UNION DISTINCT
+    -- Svi potomci odabranih kategorija
+    SELECT k.id
+    FROM KATEGORIJE k
+    JOIN podstablo p ON k.roditelj_id = p.id
+),
+rezultati AS (
+    SELECT
+        m.id,
+        m.ime,
+        m.prezime,
+        g.naziv AS grad,
+        -- Stvarno označeni majstorluci
+        (
+            SELECT GROUP_CONCAT(
+                kat.naziv ORDER BY kat.naziv SEPARATOR ', '
+            )
+            FROM MAJSTOR_KATEGORIJE mk
+            JOIN KATEGORIJE kat ON kat.id = mk.kategorija_id
+            WHERE mk.majstor_id = m.id
+        ) AS majstorluci,
+        -- Udaljenost od odabranog grada (km)
+        ROUND(
+            6371 * 2 * ASIN(LEAST(1, SQRT(
+                POWER(SIN(RADIANS(g.latitude - pg.latitude) / 2), 2)
+                + COS(RADIANS(pg.latitude))
+                * COS(RADIANS(g.latitude))
+                * POWER(SIN(RADIANS(g.longitude - pg.longitude) / 2), 2)
+            ))),
+            1
+        ) AS udaljenost_km,
+        now() as datum_i_vrijeme_eksporta
+    FROM MAJSTORI m
+    JOIN GRADOVI g ON g.id = m.grad_id
+    LEFT JOIN GRADOVI pg ON pg.id = @grad_id
+    WHERE (
+        JSON_LENGTH(@kategorije) = 0
+        OR EXISTS (
+            SELECT 1
+            FROM MAJSTOR_KATEGORIJE mk
+            JOIN podstablo p ON p.id = mk.kategorija_id
+            WHERE mk.majstor_id = m.id
+        )
+    )
+)
+SELECT *
+FROM rezultati
+WHERE
+    @grad_id IS NULL
+    OR (
+        @radijus_km IS NULL
+        AND grad = (SELECT naziv FROM GRADOVI WHERE id = @grad_id)
+    )
+    OR (
+        @radijus_km IS NOT NULL
+        AND udaljenost_km <= @radijus_km
+    )
+ORDER BY id;
+/*
+1,Amir,Elektrović,Sarajevo,"IP kamere, Mrežne instalacije",,2026-10-31 20:46:17
+4,Adis,Alarmović,Tuzla,Alarmni sistemi,,2026-10-31 20:46:17
+6,Eldin,Kamerić,Mostar,"Analogni sistemi, IP kamere",,2026-10-31 20:46:17
+*/
+
+-- 7b. Provjera pretrage majstora po stablu majstorluka - dio drugi (1 nadredjena roditeljska kategorija)
+
+-- PARAMETRI PRETRAGE
+SET @kategorije = JSON_ARRAY(12); -- Lista ID-jeva kategorija (12-Niska struja)
+SET @grad_id = NULL;              -- NULL = svi gradovi
+SET @radijus_km = NULL;           -- NULL = bez radijusa
+
+-- PRETRAGA MAJSTORA
+WITH RECURSIVE podstablo AS (
+    -- Odabrane kategorije
+    SELECT k.id
+    FROM KATEGORIJE k
+    JOIN JSON_TABLE(
+        @kategorije,
+        '$[*]' COLUMNS (id INT PATH '$')
+    ) t ON t.id = k.id
+    UNION DISTINCT
+    -- Svi potomci odabranih kategorija
+    SELECT k.id
+    FROM KATEGORIJE k
+    JOIN podstablo p ON k.roditelj_id = p.id
+),
+rezultati AS (
+    SELECT
+        m.id,
+        m.ime,
+        m.prezime,
+        g.naziv AS grad,
+        -- Stvarno označeni majstorluci
+        (
+            SELECT GROUP_CONCAT(
+                kat.naziv ORDER BY kat.naziv SEPARATOR ', '
+            )
+            FROM MAJSTOR_KATEGORIJE mk
+            JOIN KATEGORIJE kat ON kat.id = mk.kategorija_id
+            WHERE mk.majstor_id = m.id
+        ) AS majstorluci,
+        -- Udaljenost od odabranog grada (km)
+        ROUND(
+            6371 * 2 * ASIN(LEAST(1, SQRT(
+                POWER(SIN(RADIANS(g.latitude - pg.latitude) / 2), 2)
+                + COS(RADIANS(pg.latitude))
+                * COS(RADIANS(g.latitude))
+                * POWER(SIN(RADIANS(g.longitude - pg.longitude) / 2), 2)
+            ))),
+            1
+        ) AS udaljenost_km,
+        now() as datum_i_vrijeme_eksporta
+    FROM MAJSTORI m
+    JOIN GRADOVI g ON g.id = m.grad_id
+    LEFT JOIN GRADOVI pg ON pg.id = @grad_id
+    WHERE (
+        JSON_LENGTH(@kategorije) = 0
+        OR EXISTS (
+            SELECT 1
+            FROM MAJSTOR_KATEGORIJE mk
+            JOIN podstablo p ON p.id = mk.kategorija_id
+            WHERE mk.majstor_id = m.id
+        )
+    )
+)
+SELECT *
+FROM rezultati
+WHERE
+    @grad_id IS NULL
+    OR (
+        @radijus_km IS NULL
+        AND grad = (SELECT naziv FROM GRADOVI WHERE id = @grad_id)
+    )
+    OR (
+        @radijus_km IS NOT NULL
+        AND udaljenost_km <= @radijus_km
+    )
+ORDER BY id;
+/*
+1,Amir,Elektrović,Sarajevo,"IP kamere, Mrežne instalacije",,2026-10-31 20:46:50
+4,Adis,Alarmović,Tuzla,Alarmni sistemi,,2026-10-31 20:46:50
+6,Eldin,Kamerić,Mostar,"Analogni sistemi, IP kamere",,2026-10-31 20:46:50
+11,Alen,Elektrović,Tuzla,"Električar, Niska struja",,2026-10-31 20:46:50
+*/
+
+-- 7c. Provjera pretrage majstora po stablu majstorluka - (1 nadredjena roditeljska kategorija + grad tuzla i radijus vazdušne linije 100 km da se iskljuci Mostar a ostane Sarajevo)
+
+-- PARAMETRI PRETRAGE
+SET @kategorije = JSON_ARRAY(12); -- Lista ID-jeva kategorija (12-Niska struja)
+SET @grad_id = 4;              -- NULL = svi gradovi (4 - Tuzla)
+SET @radijus_km = 100;           -- NULL = bez radijusa
+
+-- PRETRAGA MAJSTORA
+WITH RECURSIVE podstablo AS (
+    -- Odabrane kategorije
+    SELECT k.id
+    FROM KATEGORIJE k
+    JOIN JSON_TABLE(
+        @kategorije,
+        '$[*]' COLUMNS (id INT PATH '$')
+    ) t ON t.id = k.id
+    UNION DISTINCT
+    -- Svi potomci odabranih kategorija
+    SELECT k.id
+    FROM KATEGORIJE k
+    JOIN podstablo p ON k.roditelj_id = p.id
+),
+rezultati AS (
+    SELECT
+        m.id,
+        m.ime,
+        m.prezime,
+        g.naziv AS grad,
+        -- Stvarno označeni majstorluci
+        (
+            SELECT GROUP_CONCAT(
+                kat.naziv ORDER BY kat.naziv SEPARATOR ', '
+            )
+            FROM MAJSTOR_KATEGORIJE mk
+            JOIN KATEGORIJE kat ON kat.id = mk.kategorija_id
+            WHERE mk.majstor_id = m.id
+        ) AS majstorluci,
+        -- Udaljenost od odabranog grada (km)
+        ROUND(
+            6371 * 2 * ASIN(LEAST(1, SQRT(
+                POWER(SIN(RADIANS(g.latitude - pg.latitude) / 2), 2)
+                + COS(RADIANS(pg.latitude))
+                * COS(RADIANS(g.latitude))
+                * POWER(SIN(RADIANS(g.longitude - pg.longitude) / 2), 2)
+            ))),
+            1
+        ) AS udaljenost_km,
+        now() as datum_i_vrijeme_eksporta
+    FROM MAJSTORI m
+    JOIN GRADOVI g ON g.id = m.grad_id
+    LEFT JOIN GRADOVI pg ON pg.id = @grad_id
+    WHERE (
+        JSON_LENGTH(@kategorije) = 0
+        OR EXISTS (
+            SELECT 1
+            FROM MAJSTOR_KATEGORIJE mk
+            JOIN podstablo p ON p.id = mk.kategorija_id
+            WHERE mk.majstor_id = m.id
+        )
+    )
+)
+SELECT *
+FROM rezultati
+WHERE
+    @grad_id IS NULL
+    OR (
+        @radijus_km IS NULL
+        AND grad = (SELECT naziv FROM GRADOVI WHERE id = @grad_id)
+    )
+    OR (
+        @radijus_km IS NOT NULL
+        AND udaljenost_km <= @radijus_km
+    )
+ORDER BY id;
+/*
+1,Amir,Elektrović,Sarajevo,"IP kamere, Mrežne instalacije",78.5,2026-10-31 20:53:10
+4,Adis,Alarmović,Tuzla,Alarmni sistemi,0,2026-10-31 20:53:10
+11,Alen,Elektrović,Tuzla,"Električar, Niska struja",0,2026-10-31 20:53:10
+*/

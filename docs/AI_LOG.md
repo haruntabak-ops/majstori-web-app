@@ -40,3 +40,37 @@
 - Prije prihvatanja AI prijedloga provjeriti ih u odnosu na Excel dokumentaciju poslovnih pravila, ERD i postojeći kod.
 - Ne predstavljati demonstracijske podatke kao trajno pohranjene podatke iz baze. Njihova zamjena stvarnim API pozivima planirana je za kasnije milestone-e.
 - U narednim milestone-ima dodavati nove zapise samo za stvarno korištene AI alate, stvarne promptove ili njihove sažetke te probleme koji su zaista uočeni i ispravljeni.
+
+## Milestone 2 – Baza podataka i DAO sloj
+
+**AI alati korišteni:** ChatGPT – pomoć pri analizi projektne dokumentacije i frontenda, planiranju DAO sloja, pisanju i komentarisanju PHP DAO metoda, pripremi SQL pretrage, testiranju i dopuni projektne dokumentacije. Prijedlozi su provjeravani i prilagođavani zahtjevima projekta i pristupu iz pokazne aplikacije **Campus Events App**.
+
+### Najvažniji zahtjevi upućeni AI alatu
+
+- Analizirati funkcionalnosti predviđene na postojećim frontend stranicama i u Excel specifikaciji, bez osmišljavanja novih funkcionalnosti, te dokumentovati plan: uloga → stranica → funkcionalnost → REST ruta → Service → DAO metoda (`docs/FRONTEND_API_PLAN.md`).
+- Implementirati i dokumentovati DAO sloj na osnovu MySQL modela, uz zajednički `BaseDao`, zasebnu DAO klasu za svaku tabelu i prilagođavanje složenom primarnom ključu vezne tabele.
+- Osmisliti SQL pretragu majstora prema kategorijama i njihovim potomcima, uz opcionalni grad i radijus. Majstor se pronalazi samo ako je eksplicitno odabrao traženu kategoriju ili nekog njenog potomka, ne samo roditelja.
+- Napraviti jednostavan `backend/rest/dao/test.php` koji prikazuje CRUD operacije nad novim privremenim zapisima i rezultate scenarija pretrage 7a, 7b i 7c, bez mijenjanja postojećih podataka.
+
+### Slučajevi u kojima je AI predložio pogrešno ili nepotpuno rješenje
+
+1. **CRUD test je prvobitno bio ograničen na jednu tabelu.**  
+   **Šta je bilo nepotpuno:** Prvi prijedlog testiranja izvodio je CRUD nad jednom testnom kategorijom, umjesto da provjeri sve tabele baze.  
+   **Kako je problem prepoznat:** Zatražena je provjera DAO sloja za svih pet tabela, uz poseban tretman vezne tabele.  
+   **Kako je ispravljeno:** Pripremljen je `test.php` s direktnim pozivima DAO metoda za svih pet tabela. Test koristi samo nove privremene zapise, izvršava CREATE, READ, UPDATE i DELETE (odnosno zamjenu veze kod vezne tabele), ispisuje rezultate i na kraju radi `ROLLBACK`. Nakon dodatne povratne informacije test je pojednostavljen po uzoru na `testv4.php` iz pokazne aplikacije.
+
+2. **Generički CRUD nije u potpunosti odgovarao veznoj tabeli.**  
+   **Šta je bilo problematično:** Generičke metode u `BaseDao` polaze od standardne kolone `id`, koju tabela `MAJSTOR_KATEGORIJE` nema.  
+   **Kako je problem prepoznat:** Provjerom ERD modela i složenog primarnog ključa (`majstor_id`, `kategorija_id`) uočeno je da se iste operacije ne mogu primjenjivati na sve tabele bez prilagođavanja.  
+   **Kako je ispravljeno:** Za veznu tabelu koriste se namjenske metode `MajstorKategorijaDao`, a `BaseDao` je minimalno dopunjen zaštitom od neodgovarajućih generičkih operacija zasnovanih na `id`.
+
+3. **Prvobitni prijedlog pretrage bio je nepotrebno komplikovan u servisnom sloju.**  
+   **Šta je bilo problematično:** Predloženo je da servis učitava sve kategorije, sve veze majstora i kategorija, sve majstore i sve gradove korištenjem `get_all()` iz četiri DAO klase, pa da u PHP-u sam pronalazi potomke, podudaranja i odgovarajuće lokacije. Takav pristup nepotrebno učitava podatke i komplikuje budući servis.  
+   **Kako je problem prepoznat:** Postavljeno je pitanje može li MySQL direktno obaviti hijerarhijsku pretragu i filtriranje, umjesto da se kompletan skup podataka prenosi u PHP. Dodatno je zatraženo da PHP rješenje bude što bliže SQL upitima koji se posebno provjeravaju u DataGripu.  
+   **Kako je ispravljeno:** Implementirana je namjenska `MajstorDao::pretrazi()` metoda s rekurzivnim SQL upitom (`WITH RECURSIVE`, `JSON_TABLE`, `EXISTS`), uz opcionalni grad i radijus. Nakon prolaznog prijedloga dinamičkog sastavljanja SQL dijelova, upit je pojednostavljen tako da je blizak testnim upitima 7a, 7b i 7c. Servis će u narednom milestoneu prosljeđivati filtere DAO metodi, umjesto da sam filtrira sve zapise.
+
+### Rezultat provjere
+
+- DAO metode su testirane kroz `backend/rest/dao/test.php`. Pretrage 7a, 7b i 7c vratile su očekivane majstore, uključujući isključivanje onih koji su odabrali samo nadređenu kategoriju ili su izvan radijusa.
+- CRUD operacije nad privremenim zapisima svih pet tabela ispisale su očekivane rezultate; sačuvani ispis nalazi se u `backend/rest/dao/test_php_rezultat.txt`.
+

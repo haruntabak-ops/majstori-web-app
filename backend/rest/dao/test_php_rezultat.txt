@@ -1,0 +1,256 @@
+=== 1. READ - broj zapisa u svih pet tabela ===
+KORISNICI: 13
+GRADOVI: 5
+MAJSTORI: 12
+KATEGORIJE: 19
+MAJSTOR_KATEGORIJE: 17
+
+=== 2. READ - primjeri namjenskih DAO metoda ===
+Korisnik po e-mailu (prikazuje i hash lozinke):
+Array
+(
+    [id] => 2
+    [email] => amir.elektrovic@primjer.ba
+    [lozinka_hash] => $2y$12$Ibq0/I6G5NPAjfgTv7g.vu3UPIN0gS209xPNy1SbxiefgnvFZ4ByK
+    [uloga] => majstor
+)
+Grad Sarajevo:
+Array
+(
+    [id] => 1
+    [naziv] => Sarajevo
+    [latitude] => 43.856300
+    [longitude] => 18.413100
+)
+Profil majstora za korisnicki nalog ID 2 (Amir):
+Array
+(
+    [id] => 1
+    [korisnik_id] => 2
+    [grad_id] => 1
+    [ime] => Amir
+    [prezime] => Elektrović
+    [telefon] => 061 000 101
+    [opis] => Bavim se ugradnjom i podešavanjem IP kamera za video-nadzor, kao i mrežnim instalacijama. Pomažem pri postavljanju mrežne opreme i povezivanju uređaja kako bi sistem radio pouzdano i stabilno.
+    [grad_naziv] => Sarajevo
+    [email] => amir.elektrovic@primjer.ba
+)
+Korijenske kategorije:
+Array
+(
+    [0] => Array
+        (
+            [id] => 1
+            [roditelj_id] =>
+            [naziv] => Sva majstorstva
+        )
+
+)
+Izabrani majstorluci majstora ID 1 (Amir):
+Array
+(
+    [0] => Array
+        (
+            [majstor_id] => 1
+            [kategorija_id] => 20
+        )
+
+    [1] => Array
+        (
+            [majstor_id] => 1
+            [kategorija_id] => 27
+        )
+
+)
+
+=== 3. PRETRAGA 7a - kategorije 15 i 18, bez grada i radijusa ===
+OCEKIVANO: Amir (1), Adis (4), Eldin (6).
+NE TREBA BITI: Alen (11), jer je oznacio samo roditeljske kategorije.
+STVARNI REZULTATI:
+1 - Amir Elektrović (Sarajevo) | Odabrani majstorluci: IP kamere, Mrežne instalacije
+4 - Adis Alarmović (Tuzla) | Odabrani majstorluci: Alarmni sistemi
+6 - Eldin Kamerić (Mostar) | Odabrani majstorluci: Analogni sistemi, IP kamere
+
+=== 4. PRETRAGA 7b - kategorija 12, bez grada i radijusa ===
+OCEKIVANO: Amir (1), Adis (4), Eldin (6), Alen (11).
+OBJASNJENJE: Alen sada ulazi jer je izabrao upravo kategoriju 12.
+STVARNI REZULTATI:
+1 - Amir Elektrović (Sarajevo) | Odabrani majstorluci: IP kamere, Mrežne instalacije
+4 - Adis Alarmović (Tuzla) | Odabrani majstorluci: Alarmni sistemi
+6 - Eldin Kamerić (Mostar) | Odabrani majstorluci: Analogni sistemi, IP kamere
+11 - Alen Elektrović (Tuzla) | Odabrani majstorluci: Električar, Niska struja
+
+=== 5. PRETRAGA 7c - kategorija 12, Tuzla, radijus 100 km ===
+OCEKIVANO: Amir (1, oko 78.5 km), Adis (4, 0 km), Alen (11, 0 km).
+NE TREBA BITI: Eldin (6), zbog udaljenosti Mostara od Tuzle.
+STVARNI REZULTATI:
+1 - Amir Elektrović (Sarajevo) | Odabrani majstorluci: IP kamere, Mrežne instalacije | Udaljenost: 78.5 km
+4 - Adis Alarmović (Tuzla) | Odabrani majstorluci: Alarmni sistemi | Udaljenost: 0 km
+11 - Alen Elektrović (Tuzla) | Odabrani majstorluci: Električar, Niska struja | Udaljenost: 0 km
+
+=== 6. CRUD - testni podaci unutar transakcije ===
+Testna oznaka: DAO_TEST_b495975a
+
+=== 6a. KORISNICI - CREATE, READ, UPDATE ===
+CREATE - ID: 14
+READ:
+Array
+(
+    [id] => 14
+    [email] => dao_test_b495975a@primjer.ba
+    [lozinka_hash] => $2y$12$cYTn3e13BUZ.Z41oAHByEuZ47u1IpUeBPyIpqG262L5ldMBPvcpD.
+    [uloga] => majstor
+)
+UPDATE - promijenjen email:
+Array
+(
+    [id] => 14
+    [email] => dao_test_b495975a_novo@primjer.ba
+    [lozinka_hash] => $2y$12$cYTn3e13BUZ.Z41oAHByEuZ47u1IpUeBPyIpqG262L5ldMBPvcpD.
+    [uloga] => majstor
+)
+
+=== 6b. GRADOVI - CREATE, READ, UPDATE ===
+CREATE - ID: 6
+READ:
+Array
+(
+    [id] => 6
+    [naziv] => DAO_TEST_b495975a_Grad
+    [latitude] => 43.800000
+    [longitude] => 18.400000
+)
+UPDATE - promijenjen naziv:
+Array
+(
+    [id] => 6
+    [naziv] => DAO_TEST_b495975a_NoviGrad
+    [latitude] => 43.800000
+    [longitude] => 18.400000
+)
+
+=== 6c. MAJSTORI - CREATE, READ, UPDATE ===
+CREATE - ID: 13
+READ:
+Array
+(
+    [id] => 13
+    [korisnik_id] => 14
+    [grad_id] => 6
+    [ime] => Testni
+    [prezime] => Majstor
+    [telefon] => 000-000
+    [opis] => A3 testni profil
+    [grad_naziv] => DAO_TEST_b495975a_NoviGrad
+    [email] => dao_test_b495975a_novo@primjer.ba
+)
+UPDATE - promijenjeno ime i telefon:
+Array
+(
+    [id] => 13
+    [korisnik_id] => 14
+    [grad_id] => 6
+    [ime] => Izmijenjeni
+    [prezime] => Majstor
+    [telefon] => 000-001
+    [opis] => A3 testni profil
+    [grad_naziv] => DAO_TEST_b495975a_NoviGrad
+    [email] => dao_test_b495975a_novo@primjer.ba
+)
+
+=== 6d. KATEGORIJE - CREATE, READ, UPDATE ===
+CREATE - roditelj ID 62, dijete ID 63
+READ - djeca novog roditelja:
+Array
+(
+    [0] => Array
+        (
+            [id] => 63
+            [roditelj_id] => 62
+            [naziv] => DAO_TEST_b495975a_Dijete
+        )
+
+)
+UPDATE - promijenjen naziv djeteta:
+Array
+(
+    [id] => 63
+    [roditelj_id] => 62
+    [naziv] => DAO_TEST_b495975a_IzmijenjenoDijete
+)
+
+=== 6e. MAJSTOR_KATEGORIJE - CREATE, READ, zamjena veze ===
+CREATE - veza majstor 13 -> kategorija 63
+READ - po majstoru:
+Array
+(
+    [0] => Array
+        (
+            [majstor_id] => 13
+            [kategorija_id] => 63
+        )
+
+)
+READ - po kategoriji:
+Array
+(
+    [0] => Array
+        (
+            [majstor_id] => 13
+            [kategorija_id] => 63
+        )
+
+)
+READ - majstori za kategoriju (MajstorDao):
+Array
+(
+    [0] => Array
+        (
+            [id] => 13
+            [korisnik_id] => 14
+            [grad_id] => 6
+            [ime] => Izmijenjeni
+            [prezime] => Majstor
+            [telefon] => 000-001
+            [opis] => A3 testni profil
+            [grad_naziv] => DAO_TEST_b495975a_NoviGrad
+            [email] => dao_test_b495975a_novo@primjer.ba
+        )
+
+)
+ZAMJENA VEZE - majstor sada ima roditeljsku kategoriju:
+Array
+(
+    [0] => Array
+        (
+            [majstor_id] => 13
+            [kategorija_id] => 62
+        )
+
+)
+
+=== 7. DELETE - brisanje svih novih testnih zapisa ===
+DELETE veza - obrisanih redova: 1
+READ nakon DELETE veze:
+Array
+(
+)
+DELETE dijete - obrisanih redova: 1
+DELETE roditelj - obrisanih redova: 1
+READ nakon DELETE kategorija:
+NULL
+DELETE majstor - obrisanih redova: 1
+READ nakon DELETE majstora:
+NULL
+DELETE grad - obrisanih redova: 1
+READ nakon DELETE grada:
+NULL
+DELETE korisnik - obrisanih redova: 1
+READ nakon DELETE korisnika:
+NULL
+
+OCEKIVANO: svaki DELETE ispisuje 1, a READ nakon brisanja vraca prazan niz ili NULL.
+OCEKIVANO: svi novi testni zapisi su obrisani; pocetni podaci nisu dirani.
+
+=== 8. ROLLBACK - testni upisi nisu trajno sacuvani ===
+KRAJ TESTA - uporedi ispis s navedenim ocekivanim rezultatima.

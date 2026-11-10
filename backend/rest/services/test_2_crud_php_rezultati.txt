@@ -1,0 +1,44 @@
+PS G:\IBU\IT 2001 - Web Programming\Projekat\MajstoriWebApp> php backend/rest/services/test_2_crud.php
+
+=== CRUD – SAMO NOVI, PRIVREMENI TESTNI ZAPISI ===
+UPOZORENJE: test privremeno upisuje/izmjenjuje/briše podatke.
+Grad CRUD: CREATE................................................. OK
+Kategorija CRUD: CREATE roditelja................................. OK
+Kategorija CRUD: CREATE potkategorije............................. OK
+Korisnik CRUD: CREATE uz hash lozinke............................. OK
+Grad CRUD: READ................................................... OK
+Grad CRUD: UPDATE................................................. OK
+Grad: dupli naziv................................................. OK (ValidationException HTTP 400)
+Kategorija CRUD: READ i UPDATE.................................... OK
+Kategorija: zabrana ciklusa....................................... OK (ValidationException HTTP 400)
+Kategorija: zabrana brisanja roditelja............................ OK (ValidationException HTTP 400)
+Korisnik: hash nije u javnom odgovoru............................. OK
+Korisnik: provjera lozinke preko hash vrijednosti................. OK
+Korisnik CRUD: UPDATE emaila...................................... OK
+Korisnik: odbijanje pogrešne lozinke............................. OK (UnauthorizedException HTTP 401)
+Korisnik: promjena vlastite lozinke............................... OK
+Korisnik: prijava novom lozinkom.................................. OK
+Majstor CRUD: CREATE.............................................. OK
+Majstor CRUD: READ javnog profila................................. OK
+Majstor CRUD: UPDATE.............................................. OK
+Majstor: moj profil po korisničkom ID-u.......................... OK
+Majstor: sačuvaj moj profil (PUT)................................ OK
+Grad: zabrana brisanja zauzetog grada (409)....................... OK (ConflictException HTTP 409)
+Veza CRUD: CREATE................................................. OK
+Veza CRUD: READ po složenom ključu.............................. OK
+Veza: zabrana dupliciranja........................................ OK (ValidationException HTTP 400)
+Pretraga: roditelj pronalazi izabrano dijete...................... OK
+Pretraga: grad i radijus 0 km..................................... OK
+Veza UPDATE: transakcijska zamjena izbora......................... OK
+Majstor: sačuvaj moje majstorluke................................ OK
+Majstor: pročitaj moje majstorluke............................... OK
+Veza DELETE: brisanje po oba ključa.............................. OK
+Kategorija DELETE: brisanje lista i pripadajuće veze............. OK
+Kategorija CRUD: DELETE korijena.................................. OK
+Majstor CRUD: DELETE.............................................. OK
+Grad CRUD: DELETE (grad više niko ne koristi).................... OK
+Korisnik CRUD: DELETE............................................. OK
+
+=== REZERVNO ČIŠĆENJE TESTNIH ZAPISA ===
+
+REZULTAT: 36 uspješno, 0 neuspješno.

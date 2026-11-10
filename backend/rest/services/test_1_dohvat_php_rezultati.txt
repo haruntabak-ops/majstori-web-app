@@ -1,0 +1,77 @@
+PS G:\IBU\IT 2001 - Web Programming\Projekat\MajstoriWebApp> php backend/rest/services/test_1_dohvat.php
+
+=== 1. ČITANJE PODATAKA I POSTOJEĆE DAO METODE ===
+GradService: GET svi gradovi...................................... OK
+KategorijaService: GET sve kategorije............................. OK
+KorisnikService: GET svi korisnici bez hashova.................... OK
+MajstorService: GET svi profili................................... OK
+MajstorKategorijaService: GET sve veze............................ OK
+StatistikaService: brojači početne stranice..................... OK
+PretragaService: bez filtera (broj odgovara listi)................ OK
+GradService: GET jedan postojeći grad............................ OK
+MajstorService: javni profil s majstorlucima...................... OK
+MajstorKategorijaService: direktne veze profila................... OK
+KorisnikService: GET korisnik bez hashova......................... OK
+KategorijaService: korijenske kategorije.......................... OK
+KategorijaService: djeca jedne kategorije......................... OK
+MajstorKategorijaService: veze po kategoriji...................... OK
+KorisnikService: GET po emailu bez hasha.......................... OK
+KorisnikService: GET sa profilom bez hasha........................ OK
+KorisnikService: pregled po ulozi bez hasha....................... OK
+KorisnikService: GET svi sa profilima............................. OK
+MajstorService: GET po korisničkom ID-u.......................... OK
+
+=== 2. PRETRAGA MAJSTORA – PRIMJERI 7a, 7b, 7c IZ M2 ===
+
+--- PRETRAGA 7a: Alarmni sistemi (15) + Video-nadzor (18), bez grada i radijusa ---
+ULAZ: kategorije = [15,18], grad_id = NULL, radijus_km = NULL
+OČEKIVANO (prema M2 početnim podacima): Amir (ID 1), Adis (ID 4), Eldin (ID 6)
+NE TREBA BITI: Alen (ID 11)
+OBJAŠNJENJE: Majstor se pronađe ako je direktno odabrao traženu kategoriju ili njenog potomka; odabir pretka nije dovoljan.
+STVARNI REZULTATI SERVISA:
+  1 - Amir Elektrović (Sarajevo) | Odabrani majstorluci: IP kamere, Mrežne instalacije
+  4 - Adis Alarmović (Tuzla) | Odabrani majstorluci: Alarmni sistemi
+  6 - Eldin Kamerić (Mostar) | Odabrani majstorluci: Analogni sistemi, IP kamere
+UKUPNO: 3 pronađenih majstora.
+STATUS POZIVA: izvršeno bez greške; rezultate ručno uporedi s OČEKIVANO.
+
+--- PRETRAGA 7b: Niska struja (12), bez grada i radijusa ---
+ULAZ: kategorije = [12], grad_id = NULL, radijus_km = NULL
+OČEKIVANO (prema M2 početnim podacima): Amir (ID 1), Adis (ID 4), Eldin (ID 6), Alen (ID 11)
+NE TREBA BITI: Niko od navedena četiri majstora
+OBJAŠNJENJE: Alen ulazi u rezultate jer je eksplicitno odabrao baš kategoriju 12.
+STVARNI REZULTATI SERVISA:
+  1 - Amir Elektrović (Sarajevo) | Odabrani majstorluci: IP kamere, Mrežne instalacije
+  4 - Adis Alarmović (Tuzla) | Odabrani majstorluci: Alarmni sistemi
+  6 - Eldin Kamerić (Mostar) | Odabrani majstorluci: Analogni sistemi, IP kamere
+  11 - Alen Elektrović (Tuzla) | Odabrani majstorluci: Električar, Niska struja
+UKUPNO: 4 pronađenih majstora.
+STATUS POZIVA: izvršeno bez greške; rezultate ručno uporedi s OČEKIVANO.
+
+--- PRETRAGA 7c: Niska struja (12), Tuzla (grad 4), radijus 100 km ---
+ULAZ: kategorije = [12], grad_id = 4, radijus_km = 100
+OČEKIVANO (prema M2 početnim podacima): Amir (ID 1, oko 78,5 km), Adis (ID 4, 0 km), Alen (ID 11, 0 km)
+NE TREBA BITI: Eldin (ID 6, Mostar je izvan 100 km od Tuzle)
+OBJAŠNJENJE: Tražene kategorije + krug 100 km oko Tuzle; SQL računa udaljenost iz baze.
+STVARNI REZULTATI SERVISA:
+  1 - Amir Elektrović (Sarajevo) | Odabrani majstorluci: IP kamere, Mrežne instalacije | Udaljenost: 78.5 km
+  4 - Adis Alarmović (Tuzla) | Odabrani majstorluci: Alarmni sistemi | Udaljenost: 0 km
+  11 - Alen Elektrović (Tuzla) | Odabrani majstorluci: Električar, Niska struja | Udaljenost: 0 km
+UKUPNO: 3 pronađenih majstora.
+STATUS POZIVA: izvršeno bez greške; rezultate ručno uporedi s OČEKIVANO.
+
+=== 3. NEISPRAVNI PODACI (OČEKIVANE GREŠKE, BEZ UPISA) ===
+Grad: naziv je obavezan........................................... OK (ValidationException HTTP 400)
+Grad: latitude izvan raspona...................................... OK (ValidationException HTTP 400)
+Kategorija: prazan naziv.......................................... OK (ValidationException HTTP 400)
+Korisnik: neispravan email........................................ OK (ValidationException HTTP 400)
+Korisnik: kratka lozinka.......................................... OK (ValidationException HTTP 400)
+Majstor: nedostaju obavezna polja................................. OK (ValidationException HTTP 400)
+Pretraga: radijus bez grada....................................... OK (ValidationException HTTP 400)
+Pretraga: neispravan ID kategorije................................ OK (ValidationException HTTP 400)
+Nominatim: prazan naziv (bez internetskog poziva)................. OK (ValidationException HTTP 400)
+Grad: nepostojeći ID............................................. OK (NotFoundException HTTP 404)
+Korisnik: nedozvoljena uloga student.............................. OK (ValidationException HTTP 400)
+Pretraga: negativan radijus....................................... OK (ValidationException HTTP 400)
+
+REZULTAT: 34 uspješno, 0 neuspješno.

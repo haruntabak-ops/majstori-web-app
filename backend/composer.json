@@ -3,6 +3,10 @@
     "description": "Majstori Web App – backend for the IT 2001 Web Programming project",
     "type": "project",
     "require": {
-        "php": ">=8.2"
+        "php": ">=8.2",
+        "ext-curl": "*",
+        "ext-pdo": "*",
+        "flightphp/core": "^3.19",
+        "zircote/swagger-php": "^6.12"
     }
 }

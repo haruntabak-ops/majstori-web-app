@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MajstoriWebApp API – Swagger</title>
+    <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5.17.14/swagger-ui.css">
+    <style>body { margin: 0; background: #fafafa; }</style>
+</head>
+<body>
+<div id="swagger-ui"></div>
+<script src="https://unpkg.com/swagger-ui-dist@5.17.14/swagger-ui-bundle.js"></script>
+<script>
+    window.ui = SwaggerUIBundle({
+        url: "swagger.php",          // the generated OpenAPI document
+        dom_id: "#swagger-ui",
+        deepLinking: true,
+        persistAuthorization: true   // keep the JWT after a page reload (week 07)
+    });
+</script>
+</body>
+</html>

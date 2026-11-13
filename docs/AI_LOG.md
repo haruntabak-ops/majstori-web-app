@@ -74,3 +74,43 @@
 - DAO metode su testirane kroz `backend/rest/dao/test.php`. Pretrage 7a, 7b i 7c vratile su očekivane majstore, uključujući isključivanje onih koji su odabrali samo nadređenu kategoriju ili su izvan radijusa.
 - CRUD operacije nad privremenim zapisima svih pet tabela ispisale su očekivane rezultate; sačuvani ispis nalazi se u `backend/rest/dao/test_php_rezultat.txt`.
 
+
+## Milestone 3 – Servisni sloj, REST API i Swagger/OpenAPI
+
+**AI alati korišteni:** ChatGPT – pomoć pri planiranju i implementaciji servisnog sloja, poslovnih pravila, REST ruta, integraciji vanjskog Nominatim API-ja, pripremi Swagger/OpenAPI dokumentacije, testiranju i dopuni projektne dokumentacije. Prijedlozi su pregledani i prilagođavani postojećem DAO sloju, poslovnim pravilima i pristupu iz pokazne aplikacije **Campus Events App (Week 06)**.
+
+### Najvažniji zahtjevi upućeni AI alatu
+
+- Implementirati servisni sloj na osnovu postojećih DAO klasa, uz zajednički `BaseService` za osnovne CRUD operacije i posebne servise za poslovnu logiku. Poštovati postojeća poslovna pravila, uključujući ograničenja za gradove, hijerarhiju kategorija i veze između majstora i kategorija.
+- Prilagoditi `MajstorKategorijaService` složenom primarnom ključu vezne tabele i omogućiti transakcijsku zamjenu izbora majstorluka, bez nepotrebnog mijenjanja DAO sloja.
+- Implementirati inicijalni REST API pomoću FlightPHP-a, uz odvajanje REST, Service i DAO sloja. Organizovati rute prema funkcionalnostima aplikacije i koristiti postojeće servisne metode.
+- Implementirati inicijalni backend poziv prema vanjskom Nominatim API-ju za pronalaženje geografskih koordinata gradova, uz odgovarajuće konfiguracijske postavke.
+- Pripremiti inicijalne verzije jednostavnih PHP testova za dohvat podataka, CRUD operacije, poslovna pravila i vanjski API. Provjeriti dio REST ruta kroz browser i PowerShell.
+- Napraviti inicijalnu verziju Swagger/OpenAPI dokumentacije po uzoru na pokaznu aplikaciju **Campus Events App**, uz opis endpointa, ulaznih podataka, odgovora i poslovnih pravila. Omogućiti pregled i testiranje ruta kroz Swagger UI.
+
+### Slučajevi u kojima je AI predložio pogrešno ili nepotpuno rješenje
+
+1. **Prvobitno rješenje nije obuhvatilo potrebno lokalno podešavanje HTTPS certifikata za Nominatim API.**  
+   **Šta je bilo nepotpuno:** Implementiran je poziv Nominatim API-ju iz `NominatimService.php`, ali prvobitne upute nisu obuhvatile moguće probleme s provjerom SSL certifikata u lokalnoj PHP konfiguraciji. Zbog toga vanjski API nije odmah radio na razvojnom računaru. Problem nije bio u samim poslovnim pravilima servisa, nego u lokalnom okruženju.  
+   **Kako je problem prepoznat:** Prilikom izvršavanja testa vanjskog API-ja pojavila se greška provjere SSL certifikata.  
+   **Kako je ispravljeno:** Preuzeta je zbirka pouzdanih CA certifikata `cacert.pem` sa zvanične stranice https://curl.se/ca/cacert.pem i podešene su stavke `curl.cainfo` i `openssl.cafile` u lokalnom `php.ini`. SSL provjera nije isključivana. Nakon podešavanja uspješno je izvršen test `test_3_vanjski_api.php` za pronalaženje koordinata Sarajeva putem `NominatimService.php`.
+
+2. **Iste Swagger ulazne sheme korištene su za POST i PUT operacije.**  
+   **Šta je bilo pogrešno:** Prvobitni prijedlog Swagger dokumentacije koristio je iste ulazne sheme za dodavanje (`POST`) i izmjenu (`PUT`) pojedinih podataka, iako servisi za te operacije imaju različita pravila. Naprimjer, `GradPaths.php` za POST zahtijeva naziv i obje koordinate, dok PUT dozvoljava izmjenu naziva grada i/ili pojedinačnih koordinata, bez obaveze slanja svih polja. Slično tome, u `KategorijaPaths.php` POST zahtijeva naziv kategorije, a `roditelj_id` je opcionalan (ako nije naveden, postavlja se na `null`). PUT omogućava izmjenu naziva, roditeljske kategorije ili oba podatka.  
+   **Kako je problem prepoznat:** Prilikom pregleda Swagger dokumentacije i poređenja ulaznih shema s implementiranim servisnim pravilima uočeno je da dokumentacija ne razlikuje dovoljno zahtjeve za dodavanje i izmjenu.  
+   **Kako je ispravljeno:** U `doc_setup.php` definisane su odvojene ulazne sheme za dodavanje i izmjenu, a odgovarajući `Paths` fajlovi prilagođeni su tako da POST i PUT koriste odgovarajuće sheme.
+
+3. **Prvobitni opisi Swagger endpointa bili su nedovoljno detaljni.**  
+   **Šta je bilo nepotpuno:** Prva verzija Swagger/OpenAPI dokumentacije sadržavala je kratke opise REST metoda koji nisu dovoljno jasno objašnjavali njihovo ponašanje, ulazne parametre i važna poslovna pravila.  
+   **Kako je problem prepoznat:** Pregledom generisane dokumentacije kroz Swagger UI uočeno je da samo naziv i kratak opis metode nisu dovoljni za razumijevanje pojedinih funkcionalnosti, naročito kod pretrage majstora, hijerarhije kategorija i operacija s posebnim ograničenjima.  
+   **Kako je ispravljeno:** Naknadno su prošireni opisi endpointa u `backend/public/v1/docs/paths/`, uz jasnije navođenje svrhe operacija, značenja parametara, ponašanja sistema i relevantnih poslovnih pravila. Dokumentacija je zatim ponovo pregledana kroz Swagger UI.
+
+### Rezultat provjere
+
+- Implementiran je servisni sloj s devet servisnih klasa, uključujući `BaseService`, te potrebnim poslovnim pravilima i pomoćnim klasama.
+- Test `backend/rest/services/test_1_dohvat.php` završio je sa **34 uspješne provjere od 34**, bez neuspješnih provjera.
+- Test `backend/rest/services/test_2_crud.php` završio je sa **36 uspješnih provjera od 36**, bez neuspješnih provjera. Testiranje je obuhvatilo CRUD operacije, validaciju i poslovna pravila.
+- Test `backend/rest/services/test_3_vanjski_api.php` uspješno je pozvao Nominatim API i vratio geografske koordinate Sarajeva. Rezultati testova sačuvani su u odgovarajućim TXT fajlovima u `backend/rest/services/`.
+- Implementirano je **32 REST endpointa** organizovana u osam PHP fajlova u `backend/rest/routes/`. Dio ruta ručno je provjeren kroz browser i PowerShell, uključujući pretrage 7a, 7b i 7c te dodavanje i brisanje probnog grada. Komande i URL-ovi dokumentovani su u `backend/rest/routes/README_testiranje_ruta.md`.
+- Pripremljena je Swagger/OpenAPI dokumentacija (v1) u `backend/public/v1/docs/`. Dokumentacija i odabrane REST rute provjerene su kroz Swagger UI.
+- Povezivanje postojećeg frontenda s REST API-jem, JWT autentifikacija i zaštita administratorskih ruta ostaju za narednu fazu.

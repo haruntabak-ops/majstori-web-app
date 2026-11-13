@@ -1,0 +1,16 @@
+PS G:\IBU\IT 2001 - Web Programming\Projekat\MajstoriWebApp> php backend/rest/services/test_3_vanjski_api.php
+
+=== TEST 3 – VANJSKI API: NOMINATIM ===
+ULAZ: naziv grada = Sarajevo
+OČEKIVANO: Nominatim pronalazi Sarajevo (BiH) i vraća naziv lokacije, geografsku širinu i dužinu.
+ORIJENTACIJA: u našoj M2 bazi Sarajevo ima približno 43.8563 (latitude) i 18.4131 (longitude).
+NAPOMENA: Nominatim može vratiti malo drugačije koordinate, zavisno od izabrane tačke na karti.
+
+STVARNI REZULTAT SERVISA:
+  Naziv unesenog grada: Sarajevo
+  Pronađena lokacija: Sarajevo, Mjesna zajednica Trg oslobođenja-Centar, Općina Centar, Grad Sarajevo, Kanton Sarajevo, Federacija Bosne i Hercegovine, 71000, Bosna i Hercegovina
+  Latitude: 43.857071
+  Longitude: 18.412615
+
+REZULTAT: OK – vanjski API je odgovorio i servis je vratio koordinate.
+PROVJERA: uporedi pronađenu lokaciju i koordinate s očekivanim Sarajevom.

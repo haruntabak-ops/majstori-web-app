@@ -28,24 +28,58 @@ Ako se dokumenti razlikuju ili nešto nije jasno, nemoj samostalno izmišljati p
 
 ### Backend
 - PHP 8.2+, FlightPHP 3, PDO i MySQL 8 prema planiranom tehnološkom stacku.
-- Ova lista opisuje planirane tehnologije; ne znači da su sve već instalirane ili implementirane.
+- DAO sloj implementiran je u M2, a servisni sloj i REST API u M3.
+- Composer za upravljanje PHP bibliotekama (FlightPHP i swagger-php).
+- Swagger/OpenAPI za dokumentovanje i testiranje REST API-ja.
 - Prije implementacije provjeri postojeće profesorove primjere, trenutni kod i `composer.json`.
 
 ## 4. Struktura projekta
 
 ```text
 MajstoriWebApp/
-├── frontend/       # SPA: HTML, CSS, JavaScript, pogledi i resursi
-├── backend/        # PHP backend i REST API
-├── docs/           # projektna dokumentacija, ERD i AI evidencija
-├── radna-dokumentacija/  # pomoćni radni materijali
-├── AGENTS.md       # ova uputstva
+├── frontend/                       # frontend aplikacije (SPA)
+│   ├── assets/
+│   │   └── img/                    # folder za slike (trenutno README.txt)
+│   ├── css/
+│   │   └── style.css               # stilovi i responzivni izgled
+│   ├── js/
+│   │   └── app.js                  # SPA navigacija i JavaScript logika
+│   ├── views/                      # HTML prikazi pojedinačnih ekrana
+│   ├── index.html                  # početna HTML stranica
+│   └── README.txt                  # dodatne informacije o frontendu
+├── backend/                        # PHP backend i REST API
+│   ├── config/
+│   │   └── config.example.php      # primjer konfiguracije backenda
+│   ├── logs/                       # logovi aplikacije
+│   ├── middleware/                 # folder za middleware
+│   ├── public/
+│   │   └── v1/
+│   │       └── docs/              # Swagger/OpenAPI dokumentacija
+│   │           ├── paths/         # OpenAPI opisi REST ruta
+│   │           ├── doc_setup.php  # OpenAPI sheme
+│   │           ├── index.html     # Swagger UI
+│   │           └── swagger.php    # generisanje OpenAPI JSON-a
+│   ├── rest/
+│   │   ├── dao/                    # pristup MySQL bazi
+│   │   ├── services/               # poslovna logika i testovi servisa
+│   │   └── routes/                 # REST rute i dokumentacija testiranja
+│   ├── utils/                      # pomoćne klase i izuzeci
+│   ├── .htaccess                   # Apache konfiguracija za backend
+│   ├── composer.json               # Composer zavisnosti
+│   ├── composer.lock               # tačne verzije zavisnosti
+│   └── index.php                   # glavna ulazna tačka backenda
+├── database/
+│   ├── majstori_web_app.sql        # kreiranje baze i početni podaci
+│   └── README_baza.md              # dokumentacija baze
+├── docs/                           # projektna dokumentacija, ERD i AI evidencija
+├── radna-dokumentacija/            # pomoćni radni materijali
+├── AGENTS.md                       # uputstva za AI asistente
 ├── .gitignore
-├── server.php
+├── server.php                      # lokalno usmjeravanje HTTP zahtjeva
 └── README.md
 ```
 
-Unutar `backend/` nalaze se konfiguracija, logovi, middleware te `rest/dao/`, `rest/routes/` i `rest/services/`. Unutar `frontend/` nalaze se CSS, JavaScript, pogledi i resursi. Ova struktura je namjerno sažeta; prije izmjene provjeri stvarne fajlove i foldere u repozitoriju.
+Prije bilo kakvih izmjena potrebno je provjeriti stvarne fajlove i foldere u repozitoriju.
 
 ## 5. Pravila koja AI mora slijediti
 
@@ -80,3 +114,23 @@ Ne preimenovati postojeće elemente samo radi kozmetičkog ujednačavanja. Prije
 4. **Vezna tabela:** Voditi računa da `MAJSTOR_KATEGORIJE` ima složeni primarni ključ umjesto standardnog `id`. Prilagoditi njenu DAO klasu i zaštititi `BaseDao` od neodgovarajućih generičkih operacija.
 
 5. **Pretraga majstora:** Osmisliti efikasnu pretragu prema hijerarhiji kategorija, uz opcionalni grad i radijus. Majstor odgovara traženoj kategoriji samo ako je eksplicitno odabrao nju ili nekog njenog potomka, a ne samo roditelja.
+
+## 8. Dodatne upute za Milestone 3 – Servisni sloj, REST API i Swagger
+
+1. **Arhitektura:** Slijediti pristup iz pokazne aplikacije **Campus Events App (Week 06)** i poštovati razdvajanje REST, Service i DAO sloja. REST rute obrađuju HTTP zahtjeve i pozivaju servise, servisi implementiraju poslovnu logiku, a DAO klase pristupaju bazi podataka. Ne pisati SQL upite direktno u servisima ili REST rutama.
+
+2. **Servisni sloj:** Koristiti postojeći `BaseService` za zajedničke CRUD operacije i posebne servise za poslovna pravila. Voditi računa da `MajstorKategorijaService` zbog složenog primarnog ključa ne nasljeđuje `BaseService` i koristi posebne metode za upravljanje vezama.
+
+3. **Poslovna pravila i validacija:** Poštovati postojeća poslovna pravila i koristiti pomoćne fajlove `Validator.php`, `Roles.php` i `exceptions.php`. Prije dodavanja novih provjera pregledati postojeću implementaciju kako se poslovna logika ne bi nepotrebno ponavljala.
+
+4. **REST rute:** Koristiti postojeću FlightPHP strukturu i odgovarajuće servise. Prije dodavanja ili izmjene endpointa provjeriti postojeće rute, servisne metode i plan `docs/FRONTEND_API_PLAN.md`.
+
+5. **Swagger/OpenAPI:** Pri dodavanju ili izmjeni REST ruta ažurirati odgovarajuću dokumentaciju u `backend/public/v1/docs/paths/` i, kada je potrebno, sheme u `doc_setup.php`. Dokumentacija treba odgovarati stvarnoj implementaciji API-ja.
+
+6. **Testiranje:** Koristiti postojeće PHP testove servisnog sloja i provjeravati REST rute. CRUD testove pokretati samo na razvojnoj/testnoj bazi podataka jer tokom izvršavanja mogu mijenjati podatke. Ne navoditi da je test uspješan ako nije izvršen i provjeren.
+
+7. **Vanjski API:** Za pronalaženje koordinata koristiti postojeći `NominatimService` i konfiguracijske postavke. Ne isključivati SSL provjeru radi zaobilaženja problema s HTTPS certifikatima.
+
+8. **Sigurnost:** JWT autentifikacija i zaštita administratorskih ruta još nisu implementirane. Do njihove implementacije administratorske rute koristiti samo lokalno, na razvojnoj/testnoj bazi podataka.
+
+9. **Postojeći kod i stil:** Zadržati jednostavan PHP stil, postojeću arhitekturu i već implementirane metode. Ne uvoditi nepotrebne klase, biblioteke ili promjene koje nisu dio dogovorenog zadatka.

@@ -17,6 +17,12 @@ class Config
     public static function DB_USER()     { return self::get_env('DB_USER', 'root'); }
     public static function DB_PASSWORD() { return self::get_env('DB_PASSWORD', ''); }
 
+    /* ---------- Vanjski API: Nominatim (bez API ključa) ---------- */
+    public static function NOMINATIM_URL() { return self::get_env('NOMINATIM_URL', 'https://nominatim.openstreetmap.org'); }
+    public static function NOMINATIM_TIMEOUT() { return self::get_env('NOMINATIM_TIMEOUT', 5); }
+    // Prije objave aplikacije postaviti prepoznatljiv User-Agent s kontaktom u okruženju.
+    public static function NOMINATIM_USER_AGENT() { return self::get_env('NOMINATIM_USER_AGENT', 'MajstoriWebApp/1.0'); }
+
     /**
      * Environment variables (set on the server) win over the default values above.
      */
